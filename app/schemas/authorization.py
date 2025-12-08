@@ -1,4 +1,9 @@
+from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
+
+class Amount(BaseModel):
+    value: float
+    currency: str
 
 class Card(BaseModel):
     number: str
@@ -9,33 +14,34 @@ class Card(BaseModel):
 
 
 class Instrument(BaseModel):
-    type: str = Field(default="CARD")
+    type: str
     card: Card
 
 
 class Capture(BaseModel):
     mode: str = Field(default="AUTOMATIC")
+    capture_after: Optional[str] = None
 
 
 class Installments(BaseModel):
-    quantity: int = 1
-    type: str = "issuer-financed"
-
-
-class TransactionComplianceAmount(BaseModel):
-    currency: str
-    value: int
-
-
-class TransactionCompliance(BaseModel):
-    laws: list[str]
-    taxable_amount: TransactionComplianceAmount
+    quantity: int
+    type: str
 
 
 class ThreeDS(BaseModel):
-    cavv: str | None = None
-    version: str | None = None
-    ds_transaction_id: str | None = None
+    cavv: str
+    version: str
+    ds_transaction_id: str
+
+
+class TaxableAmount(BaseModel):
+    currency: str
+    value: float
+
+
+class TransactionCompliance(BaseModel):
+    laws: List[str]
+    taxable_amount: TaxableAmount
 
 
 class AuthorizationRequest(BaseModel):
@@ -43,57 +49,41 @@ class AuthorizationRequest(BaseModel):
         extra="ignore",
         json_schema_extra={
             "example": {
+                "amount": {
+                    "value": 60.25,
+                    "currency": "USD"
+                },
                 "intent": "authorization",
                 "instrument": {
-                    "type": "CARD",
                     "card": {
-                        "number": "4111111111111111",
-                        "cvv": "123",
+                        "number": "5186170070001108",
+                        "cvv": "917",
                         "expiration_month": "12",
-                        "expiration_year": "2030",
-                        "holder_name": "Juan Pérez"
-                    }
+                        "expiration_year": "25",
+                        "holder_name": "Fede Delgado"
+                    },
+                    "type": "CARD"
                 },
-                "merchant_id": "merchant_123",
-                "id": "order_456",
-                "entry_mode": "contactless",
-                "order_type": "purchase",
-                "initiator": "merchant",
+                "merchant_id": "mer-d43nagkm4gl7c1b8dqhg",
                 "capture": {
-                    "mode": "AUTOMATIC"
-                },
-                "installments": {
-                    "quantity": 1,
-                    "type": "issuer-financed"
-                },
-                "three_ds": {
-                    "cavv": "some_cavv_value",
-                    "version": "2.1.0",
-                    "ds_transaction_id": "ds_trans_id_789"
-                },
-                "eci": "05",
-                "transaction_compliance": [
-                    {
-                        "laws": ["IVA"],
-                        "taxable_amount": {
-                            "currency": "COP",
-                            "value": 10000
-                        }
-                    }
-                ]
+                    "mode": "AUTOMATIC",
+                    "capture_after": ""
+                }
             }
         }
     )
 
-    intent: str = Field(default="authorization")
+    intent: str
+    amount: Amount
     instrument: Instrument
     merchant_id: str
-    id: str
-    entry_mode: str = "contactless"
-    order_type: str = "purchase"
-    initiator: str = "merchant"
-    capture: Capture | None = None
-    installments: Installments | None = None
-    three_ds: ThreeDS | None = None
-    eci: str = "05"
-    transaction_compliance: list[TransactionCompliance] | None = None
+
+    id: Optional[str] = None
+    entry_mode: Optional[str] = None
+    order_type: Optional[str] = None
+    initiator: Optional[str] = None
+    capture: Capture
+    installments: Optional[Installments] = None
+    three_ds: Optional[ThreeDS] = None
+    eci: Optional[str] = None
+    transaction_compliance: Optional[List[TransactionCompliance]] = None

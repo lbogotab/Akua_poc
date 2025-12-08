@@ -10,6 +10,9 @@ from .api.v1.refund import router as refund_router
 from .api.v1.capture import router as capture_router
 from .api.v1.preauthorization import router as preauthorization_router
 from .api.v1.checkout import router as checkout_router
+from .api.v1.token_test import router as token_test_router
+from .api.v1.organization import router as organization_router
+from .api.v1.merchants import router as merchants_router
 
 def create_app() -> FastAPI:
     init_db()
@@ -38,6 +41,9 @@ def create_app() -> FastAPI:
     app.include_router(capture_router, prefix="/v1")
     app.include_router(preauthorization_router, prefix="/v1")
     app.include_router(checkout_router, prefix="/v1")
+    app.include_router(token_test_router, prefix="/v1")
+    app.include_router(organization_router, prefix="/v1")
+    app.include_router(merchants_router, prefix="/v1")
 
     return app
 
