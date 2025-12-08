@@ -26,6 +26,11 @@ class AkuaClient:
             self.access_token = None
 
     async def create_authorization(self, payload: AuthorizationRequest) -> dict:
+        """
+        Autorización de un pago
+        Llama Akua /v1/authorizations
+        """
+
         if not getattr(payload, "id", None):
             payload.id = f"AB-{uuid.uuid4().hex[:12]}"
         return await self._real_authorization(payload)
@@ -68,6 +73,10 @@ class AkuaClient:
     ### Cancelamiento de pagos ###
 
     async def cancel_payment(self, payment_id: str, payload: CancelRequest) -> dict:
+        """
+        Cancelación de un pago
+        Llama Akua /v1/payments/{payment_id}/cancel
+        """
         return await self._real_cancel(payment_id, payload)
 
     async def _real_cancel(self, payment_id: str, payload: CancelRequest) -> dict:
@@ -163,7 +172,7 @@ class AkuaClient:
         if payload.amount:
             idem_key = f"capture-{payment_id}-{uuid.uuid4()}"
         else:
-            idem_key = f"capture-{payment_id}-full-{uuid.uuid4()}"
+            idem_key = f"capture-{payment_id}-{uuid.uuid4()}"
 
         headers = {
             "accept": "application/json",

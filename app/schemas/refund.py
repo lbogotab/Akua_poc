@@ -12,7 +12,7 @@ class RefundRequest(BaseModel):
         json_schema_extra={
             "example": {
                 "amount": {
-                    "value": 100,
+                    "value": 60.25,
                     "currency": "USD"
                 }
             }

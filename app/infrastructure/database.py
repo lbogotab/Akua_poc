@@ -55,6 +55,19 @@ def init_db():
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS captures (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                payment_id TEXT NOT NULL,
+                transaction_id TEXT NOT NULL,
+                amount TEXT,
+                status TEXT NOT NULL,
+                raw_response TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
         conn.commit()
 
 
@@ -116,6 +129,31 @@ def save_cancellation(
             (
                 payment_id,
                 transaction_id,
+                status,
+                json.dumps(raw_response),
+                created_at,
+            ),
+        )
+        conn.commit()
+
+def save_capture(
+    payment_id: str,
+    transaction_id: str,
+    amount: str | None,
+    status: str,
+    raw_response: dict,
+):
+    created_at = datetime.utcnow().isoformat()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO captures (payment_id, transaction_id, amount, status, raw_response, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                payment_id,
+                transaction_id,
+                amount,
                 status,
                 json.dumps(raw_response),
                 created_at,
