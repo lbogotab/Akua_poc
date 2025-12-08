@@ -27,7 +27,7 @@ class AkuaClient:
 
     async def create_authorization(self, payload: AuthorizationRequest) -> dict:
         if not getattr(payload, "id", None):
-            payload.id = f"auto-{uuid.uuid4().hex[:12]}"
+            payload.id = f"AB-{uuid.uuid4().hex[:12]}"
         return await self._real_authorization(payload)
 
     async def _real_authorization(self, payload: AuthorizationRequest) -> dict:
@@ -76,17 +76,30 @@ class AkuaClient:
 
         url = f"{self.base_url.rstrip('/')}/v1/payments/{payment_id}/cancel"
 
+        json_body = payload.model_dump(exclude_none=True)
+
+        idempotency_key = f"cancel-{payment_id}-{uuid.uuid4()}"
+
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "Idempotency-Key": f"cancel-{payment_id}",
+            "Idempotency-Key": idempotency_key,
             "authorization": f"Bearer {self.access_token}",
         }
 
         async with httpx.AsyncClient(timeout=20.0) as client:
-            response = await client.post(url, json=payload.model_dump(), headers=headers)
+            response = await client.post(url, json=json_body, headers=headers)
         
-        response.raise_for_status()
+        if response.status_code >= 400:
+            raise RuntimeError(
+                "ERROR desde Akua Cancel:\n"
+                f"- Status: {response.status_code}\n"
+                f"- URL: {url}\n"
+                f"- Idempotency-Key: {idempotency_key}\n"
+                f"- Request JSON: {json_body}\n"
+                f"- Response Body: {response.text}"
+            )
+
         return {"mode": "REAL", "akua_response": response.json()}
     
     ### Reembolso de pagos ###
@@ -103,7 +116,9 @@ class AkuaClient:
             raise RuntimeError("AKUA_MODE=REAL requiere AKUA_ACCESS_TOKEN o (AKUA_CLIENT_ID + AKUA_CLIENT_SECRET)")
 
         url = f"{self.base_url.rstrip('/')}/v1/payments/{payment_id}/refund"
-        idem_key = f"refund-{payment_id}"
+        idem_key = f"refund-{payment_id}-{uuid.uuid4()}"
+
+        json_body = payload.model_dump(exclude_none=True)
 
         headers = {
             "accept": "application/json",
@@ -113,9 +128,18 @@ class AkuaClient:
         }
 
         async with httpx.AsyncClient(timeout=20.0) as client:
-            response = await client.post(url, json=payload.model_dump(), headers=headers)
+            response = await client.post(url, json=json_body, headers=headers)
 
-        response.raise_for_status()
+        if response.status_code >= 400:
+            raise RuntimeError(
+                "ERROR desde Akua Refund:\n"
+                f"- Status: {response.status_code}\n"
+                f"- URL: {url}\n"
+                f"- Idempotency-Key: {idem_key}\n"
+                f"- Request JSON: {json_body}\n"
+                f"- Response Body: {response.text}"
+            )
+
         return {
             "mode": "REAL",
             "akua_response": response.json(),
@@ -137,9 +161,9 @@ class AkuaClient:
         url = f"{self.base_url.rstrip('/')}/v1/payments/{payment_id}/captures"
 
         if payload.amount:
-            idem_key = f"capture-{payment_id}"
+            idem_key = f"capture-{payment_id}-{uuid.uuid4()}"
         else:
-            idem_key = f"capture-{payment_id}-full"
+            idem_key = f"capture-{payment_id}-full-{uuid.uuid4()}"
 
         headers = {
             "accept": "application/json",
@@ -153,7 +177,16 @@ class AkuaClient:
         async with httpx.AsyncClient(timeout=20.0) as client:
             response = await client.post(url, json=json_body, headers=headers)
 
-        response.raise_for_status()
+        if response.status_code >= 400:
+            raise RuntimeError(
+                "ERROR desde Akua Capture:\n"
+                f"- Status: {response.status_code}\n"
+                f"- URL: {url}\n"
+                f"- Idempotency-Key: {idem_key}\n"
+                f"- Request JSON: {json_body}\n"
+                f"- Response Body: {response.text}"
+            )
+
         return {
             "mode": "REAL",
             "akua_response": response.json(),

@@ -60,13 +60,13 @@ class AuthorizationRequest(BaseModel):
                         "cvv": "917",
                         "expiration_month": "12",
                         "expiration_year": "25",
-                        "holder_name": "Fede Delgado"
+                        "holder_name": "ALEJO BOGOTA"
                     },
                     "type": "CARD"
                 },
                 "merchant_id": "mer-d43nagkm4gl7c1b8dqhg",
                 "capture": {
-                    "mode": "AUTOMATIC",
+                    "mode": "MANUAL",
                     "capture_after": ""
                 }
             }
