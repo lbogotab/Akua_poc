@@ -105,7 +105,7 @@ Esto permite auditar los flujos ejecutados sin depender de Akua
 ### Instalación manual
 
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/lbogotab/Akua_poc
 cd akua_poc
 python -m venv .venv
 source .venv/bin/activate
