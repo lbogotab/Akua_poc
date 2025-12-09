@@ -1,0 +1,11 @@
+services:
+  akua-api:
+    build: .
+    container_name: akua_poc_api
+    env_file:
+      - .env      
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
