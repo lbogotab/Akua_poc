@@ -206,7 +206,7 @@ Requiere que el pago esté capturado. Dentro de las pruebas ejecutadas salía qu
 ---
 
 ### ❤️‍🔥 Healthcheck  
-`GET /v1/health`
+`GET /v1/hello`
 
 ---
 
