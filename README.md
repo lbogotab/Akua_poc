@@ -191,7 +191,7 @@ Persiste el resultado en DB.
 ### ↩️ Reembolso  
 `POST /v1/refund/{payment_id}`
 
-Requiere que el pago esté capturado.
+Requiere que el pago esté capturado. Dentro de las pruebas ejecutadas salía que la captura estaba en proceso y nunca alcanzó a procesarse (entedería que es un tema del sandbox para cambiar este estado, por lo cual no tuvo validación real, pero se deja la construcción del llamado)
 
 ---
 
